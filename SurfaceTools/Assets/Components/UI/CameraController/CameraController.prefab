@@ -50,8 +50,8 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1202120162828068}
-  m_LocalRotation: {x: 0.33426756, y: -0.33906758, z: 0.13032553, w: 0.869663}
-  m_LocalPosition: {x: 1.6834238, y: 1.0000007, z: -2.9598715}
+  m_LocalRotation: {x: 0.15633422, y: -0.49178576, z: 0.09025961, w: 0.85179794}
+  m_LocalPosition: {x: 2.8569884, y: 1, z: -0.16337372}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4291422931222286}
@@ -65,7 +65,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1197134452659078}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5.3810015}
+  m_LocalPosition: {x: 0, y: 0, z: -5.999998}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4226313284773038}
@@ -79,7 +79,7 @@ Camera:
   m_GameObject: {fileID: 1197134452659078}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
+  m_ClearFlags: 2
   m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
   m_projectionMatrixMode: 1
   m_SensorSize: {x: 36, y: 24}
@@ -93,7 +93,7 @@ Camera:
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
-  field of view: 49.828465
+  field of view: 48.499996
   orthographic: 0
   orthographic size: 5
   m_Depth: -1
@@ -135,15 +135,16 @@ MonoBehaviour:
   panSpeed: 8
   zoomSpeed: 0.5
   orbitSpeedX: 2
-  orbitSpeedY: 1
+  orbitSpeedY: 2
   maxZoom: 2
   minZoom: 6
-  minTheta: 35
+  minTheta: -75
   maxTheta: 75
   maxX: 5
   minX: -5
   maxZ: 5
   minZ: -5
+  enableDynamicFOV: 0
   baseFOV: 35
   FOVFactor: 0.45
   rightClickThreshhold: 20

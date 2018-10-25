@@ -25,6 +25,7 @@ namespace Doublemice.UI {
     public float maxZ = 5f;
     public float minZ = -5f;
 
+    public bool enableDynamicFOV = true;
     public float baseFOV = 35f;
     public float FOVFactor = 0.45f;
 
@@ -97,23 +98,24 @@ namespace Doublemice.UI {
         this.rotationTarget,
         this.orbitSmoothing * Time.deltaTime
       );
-
-      // change field of view based on polar angle,
-      // and calculate the necessary dolly zoom to keep things the same size
-      float newFOV = this.baseFOV + this.FOVFactor * (this.maxTheta - newRotation.eulerAngles.x);
-      // changing the projection matrix is probably expensive, better not do it constantly
-      if (Mathf.Abs(newFOV - this.cam.fieldOfView) > 0.01)
-        this.cam.fieldOfView = newFOV;
-
-      float fovCorrection = 0.5f / Mathf.Tan(this.cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+      float fovCorrection = 1f;
+      if (this.enableDynamicFOV) {
+        // change field of view based on polar angle,
+        // and calculate the necessary dolly zoom to keep things the same size
+        float newFOV = this.baseFOV + this.FOVFactor * (this.maxTheta - newRotation.eulerAngles.x);
+        // changing the projection matrix is probably expensive, better not do it constantly
+        if (Mathf.Abs(newFOV - this.cam.fieldOfView) > 0.01)
+          this.cam.fieldOfView = newFOV;
+        fovCorrection = 0.5f / Mathf.Tan(this.cam.fieldOfView * Mathf.Deg2Rad * 0.5f);
+      }
       this.transform.rotation = newRotation;
 
       // update camera zoom distance
       this.currentZoom = Vector3.Lerp(
-          this.currentZoom,
-          this.zoomTarget,
-          this.zoomSmoothing * Time.deltaTime
-        );
+        this.currentZoom,
+        this.zoomTarget,
+        this.zoomSmoothing * Time.deltaTime
+      );
       this.cam.transform.localPosition = this.currentZoom * fovCorrection;
     }
 
