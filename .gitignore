@@ -1,0 +1,12 @@
+Library
+Temp
+Tutorials
+References
+*.skb
+Debug
+*.csproj
+*.sln
+*.suo
+*.blend1
+.vs
+.vscode
