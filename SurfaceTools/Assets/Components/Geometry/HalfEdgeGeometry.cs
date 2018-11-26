@@ -16,7 +16,7 @@ namespace Doublemice.Geometry {
 
     // public HalfEdge() { }
 
-    public void Set(int face, int vert, HalfEdge next, HalfEdge prev, HalfEdge pair) {
+    public void Set(int face, int vert, HalfEdge next, HalfEdge prev, HalfEdge pair = null) {
       this.face = face;
       this.vert = vert;
       this.next = next;
@@ -42,9 +42,9 @@ namespace Doublemice.Geometry {
     public float volume;
     public Vector3 centroid;
 
-    // public HalfEdgeGeometry() {
+    public HalfEdgeGeometry() {
 
-    // }
+    }
 
     public HalfEdgeGeometry(Mesh mesh) {
       this.vertices = mesh.vertices;
@@ -83,7 +83,7 @@ namespace Doublemice.Geometry {
         }
       }
 
-      this.findEdgePairs();
+      this.FindEdgePairs();
     }
 
     // determine if any two vertices of the triangle are equal,
@@ -96,7 +96,7 @@ namespace Doublemice.Geometry {
     }
 
     // find the edge pairs, O(N^2) sadly
-    private void findEdgePairs() {
+    private void FindEdgePairs() {
       for (int i = 0; i < edges.Length; i++) {
         HalfEdge edge = this.edges[i];
         if (edge.pair != null)
@@ -120,7 +120,7 @@ namespace Doublemice.Geometry {
 
     // Checks that all edge pairs match (pair of A is b, and pair of B is A)
     // Shouldn't be necessary once all the mesh modifier functions work correctly.
-    public bool checkEdgePairs() {
+    protected bool CheckEdgePairs() {
       for (int i = 0; i < this.edges.Length; i++) {
         var edge = this.edges[i];
         if (edge.deleted)
@@ -135,7 +135,7 @@ namespace Doublemice.Geometry {
     // nifty little algorithm that sums positive and negative volumes
     // of tetrahedrons from the origin to each face.
     // also calculates the center of mass of the mesh
-    public void calculateVolume() {
+    public void CalculateVolume() {
       this.volume = 0;
       this.centroid = Vector3.zero;
 
@@ -153,20 +153,20 @@ namespace Doublemice.Geometry {
       }
     }
 
-    public void removeEdge(HalfEdge edge) {
+    protected void RemoveEdge(HalfEdge edge) {
       Debug.Log("Removing edge");
 
       edge.deleted = true;
       this.freeEdges.Push(edge);
     }
 
-    public HalfEdge getNewEdge() {
+    protected HalfEdge CreateEdge() {
       HalfEdge edge = this.freeEdges.Pop();
       edge.deleted = false;
       return edge;
     }
 
-    public void removeFace(int i) {
+    protected void RemoveFace(int i) {
       Debug.LogFormat("Removing face {0}", i);
 
       this.triangles[i] = 0;
@@ -175,7 +175,7 @@ namespace Doublemice.Geometry {
       this.freeFaces.Push(i);
     }
 
-    public int getNewFace(int a, int b, int c) {
+    protected int CreateFace(int a, int b, int c) {
       int faceOffset = this.freeFaces.Pop();
       this.triangles[faceOffset + 0] = a;
       this.triangles[faceOffset + 1] = b;
@@ -183,7 +183,7 @@ namespace Doublemice.Geometry {
       return faceOffset;
     }
 
-    public void removeVert(int i) {
+    protected void RemoveVert(int i) {
       Debug.LogFormat("Removing vert {0}", i);
 
       // this.vertices[i] = Vector3.zero;
@@ -191,7 +191,7 @@ namespace Doublemice.Geometry {
       this.freeVerts.Push(i);
     }
 
-    public int getNewVert(HalfEdge keyEdge) {
+    protected int CreateVert(HalfEdge keyEdge) {
       int face = this.freeFaces.Pop();
       this.vertKeyEdges[face] = keyEdge;
       return face;
@@ -360,17 +360,18 @@ namespace Doublemice.Geometry {
     //   }
     // }
 
-    public int splitEdge(HalfEdge AB) {
+    public int SplitEdge(HalfEdge AB) {
       if(this.freeFaces.Count < 2 || this.freeVerts.Count == 0 || this.freeEdges.Count < 6)
         return -1; // this edge lives to see another day....for now
 
-      //        B
-      //      .'|'.
-      //    .'  |  '.
-      //  L     |     R
-      //    `.  |  .'
-      //      `.|.'
-      //        A
+      //     before            after
+      //        B                B
+      //      .'|'.            .'|'.
+      //    .'  |  '.        .'  |  '.
+      //  L     |     R    L- - -X- - -R
+      //    `.  |  .'        `.  |  .'
+      //      `.|.'            `.|.'
+      //        A                A
 
       HalfEdge BA = AB.pair;
       HalfEdge AR = BA.next;
@@ -380,17 +381,17 @@ namespace Doublemice.Geometry {
 
       Debug.LogFormat("Splitting edge between verts [{1}->{2}]", BA.vert, AB.vert);
 
-      this.removeEdge(AB);
-      this.removeEdge(BA);
+      this.RemoveEdge(AB);
+      this.RemoveEdge(BA);
 
-      HalfEdge AX = this.getNewEdge();
-      HalfEdge XA = this.getNewEdge();
-      HalfEdge XB = this.getNewEdge();
-      HalfEdge BX = this.getNewEdge();
-      HalfEdge XL = this.getNewEdge();
-      HalfEdge LX = this.getNewEdge();
-      HalfEdge XR = this.getNewEdge();
-      HalfEdge RX = this.getNewEdge();
+      HalfEdge AX = this.CreateEdge();
+      HalfEdge XA = this.CreateEdge();
+      HalfEdge XB = this.CreateEdge();
+      HalfEdge BX = this.CreateEdge();
+      HalfEdge XL = this.CreateEdge();
+      HalfEdge LX = this.CreateEdge();
+      HalfEdge XR = this.CreateEdge();
+      HalfEdge RX = this.CreateEdge();
 
       int A = BA.vert;
       int B = AB.vert;
@@ -405,21 +406,13 @@ namespace Doublemice.Geometry {
       this.vertKeyEdges[L] = LX;
       this.vertKeyEdges[X] = XA;
 
-      this.removeFace(AB.face);
-      this.removeFace(BA.face);
+      this.RemoveFace(AB.face);
+      this.RemoveFace(BA.face);
 
-      int AXL = this.getNewFace(A, X, L);
-      int XBL = this.getNewFace(X, B, L);
-      int ARX = this.getNewFace(A, R, X);
-      int XRB = this.getNewFace(X, R, B);
-
-      //        B
-      //      .'|'.
-      //    .'  |  '.
-      //  L- - -X- - -R
-      //    `.  |  .'
-      //      `.|.'
-      //        A
+      int AXL = this.CreateFace(A, X, L);
+      int XBL = this.CreateFace(X, B, L);
+      int ARX = this.CreateFace(A, R, X);
+      int XRB = this.CreateFace(X, R, B);
 
       // update links on existing edges
       BL.Set(XBL, L, LX, XB, BL.pair);
