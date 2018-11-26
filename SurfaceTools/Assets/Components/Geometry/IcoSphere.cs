@@ -10,11 +10,11 @@ namespace Doublemice.Geometry.Primitives {
     private MeshRenderer meshRenderer;
     private Mesh mesh;
     private IcoSphereGeometry geometry;
-    private float renderedEdgeLength = -1f;
+    private float renderedRadius = -1f;
     private float renderedSubdivisions = -1f;
 
     [Range(0, 5f)]
-    public float edgeLength = 0.1f;
+    public float radius = 0.1f;
     [Range(0, 5)]
     public int subdivisions = 0;
 
@@ -31,16 +31,16 @@ namespace Doublemice.Geometry.Primitives {
     }
 
     public void Update() {
-      if (this.edgeLength != this.renderedEdgeLength || this.subdivisions != this.renderedSubdivisions) {
+      if (this.radius != this.renderedRadius || this.subdivisions != this.renderedSubdivisions) {
         this.Regenerate();
       }
     }
 
     private void Regenerate() {
-      this.geometry.Generate(this.subdivisions, this.edgeLength);
+      this.geometry.Generate(this.subdivisions, this.radius);
       this.mesh.vertices = this.geometry.vertices;
       this.mesh.triangles = this.geometry.triangles;
-      this.renderedEdgeLength = this.edgeLength;
+      this.renderedRadius = this.radius;
     }
   }
 }

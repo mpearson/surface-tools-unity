@@ -2,22 +2,28 @@
 using UnityEngine;
 
 namespace Doublemice.Geometry.Primitives {
+
+
   public class IcoSphereGeometry {
+    private static readonly float RADIUS_TO_EDGE_LENGTH = Mathf.Sin(Mathf.PI * 2f / 5f);
+
     public Vector3[] vertices;
     public int[] triangles;
 
     public IcoSphereGeometry() { }
 
-    public IcoSphereGeometry(int subdivisions, float edgeLength) {
-      this.Generate(subdivisions, edgeLength);
+    public IcoSphereGeometry(int subdivisions, float radius) {
+      this.Generate(subdivisions, radius);
     }
 
     /// <summary>
-    /// Generate an icosahedron with edge length <paramref name="len" />
+    /// Generate an icosahedron with approximate radius <paramref name="radius" />
     /// </summary>
-    public void Generate(int subdivisions, float len) {
+    public void Generate(int subdivisions, float radius) {
       // thanks to Andreas Kahler for this method:
       // http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+
+      float len = radius * RADIUS_TO_EDGE_LENGTH;
 
       float t = (1f + Mathf.Sqrt(5f)) * 0.5f * len;
 
@@ -65,6 +71,15 @@ namespace Doublemice.Geometry.Primitives {
         8,  6,  7,
         9,  8,  1,
       };
+
+      this.NormalizeVertRadii(radius);
+    }
+
+    public void NormalizeVertRadii(float radius) {
+      for (int i = 0; i < this.vertices.Length; i++) {
+        this.vertices[i].Normalize();
+        this.vertices[i] *= radius;
+      }
     }
   }
 }
