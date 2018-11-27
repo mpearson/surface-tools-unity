@@ -8,6 +8,7 @@ namespace Doublemice.Geometry.Primitives {
     private static readonly float RADIUS_TO_EDGE_LENGTH = Mathf.Sin(Mathf.PI * 2f / 5f);
 
     public Vector3[] vertices;
+    public Vector3[] normals;
     public int[] triangles;
 
     public IcoSphereGeometry() { }
@@ -45,6 +46,8 @@ namespace Doublemice.Geometry.Primitives {
         new Vector3(-t,  0,  len),
       };
 
+      this.normals = new Vector3[this.vertices.Length];
+
       this.triangles = new int[] {
         // 5 faces around point 0
         0,  11, 5,
@@ -77,8 +80,8 @@ namespace Doublemice.Geometry.Primitives {
 
     public void NormalizeVertRadii(float radius) {
       for (int i = 0; i < this.vertices.Length; i++) {
-        this.vertices[i].Normalize();
-        this.vertices[i] *= radius;
+        this.normals[i] = this.vertices[i].normalized;
+        this.vertices[i] = this.normals[i] * radius;
       }
     }
   }

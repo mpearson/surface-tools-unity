@@ -40,6 +40,7 @@ namespace Doublemice.Geometry.Primitives {
       this.geometry.Generate(this.subdivisions, this.radius);
       this.mesh.vertices = this.geometry.vertices;
       this.mesh.triangles = this.geometry.triangles;
+      this.mesh.normals = this.geometry.normals;
       this.renderedRadius = this.radius;
     }
   }
