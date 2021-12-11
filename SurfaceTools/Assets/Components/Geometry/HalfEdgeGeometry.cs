@@ -197,168 +197,148 @@ namespace Doublemice.Geometry {
       return face;
     }
 
-    // public void mergeEdge(int AX) {
+    public void MergeEdge(HalfEdge AX) {
 
-    //   log('Merging edge '+AX)
+      //  -*-------L------L2---   we want to delete the faces AXL and ARX,
+      //  / \     /`\     / \     vertex X, edges LX and RX,
+      //     \   /```\   /   \    and reconnect L2, L3, R2, R3, etc to A
+      //      \ /`````\ /     \
+      //  -----A-------X-------*
+      //      / \`````/ \     /
+      //     /   \```/   \   /
+      //  \ /     \`/     \ /
+      //  -*-------R-------R2---
 
-    //   var i, count, edge, lastEdge, face,
-    //       vertices = geometry.vertices,
-    //       faces = geometry.faces,
-    //       edgeVert = geometry.edges.vert,
-    //       keyEdge = geometry.edges.key,
-    //       edgePair = geometry.edges.pair,
-    //       edgeNext = geometry.edges.next,
-    //       edgeFace = geometry.edges.face;
+      HalfEdge XA = AX.pair;
+      HalfEdge XL = AX.next;
+      HalfEdge LA = XL.next;
+      HalfEdge AR = XA.next;
+      HalfEdge RX = AR.next;
+      HalfEdge XR = RX.pair;
+      HalfEdge LX = XL.pair;
+      HalfEdge RR2 = XR.next;
+      HalfEdge R2X = RR2.next;
+      HalfEdge XL2 = LX.next;
+      HalfEdge L2L = XL2.next;
 
-    //   //  -*-------L------L2---   we want to delete the faces AXL and ARX,
-    //   //  / \     /`\     / \     vertex X, edges LX and RX,
-    //   //     \   /```\   /   \    and reconnect L2, L3, R2, R3, etc to A
-    //   //      \ /`````\ /     \
-    //   //  -----A-------X-------*
-    //   //      / \`````/ \     /
-    //   //     /   \```/   \   /
-    //   //  \ /     \`/     \ /
-    //   //  -*-------R-------R2---
+      Debug.LogFormat("Merging edge between verts [{1}->{2}]", XA.vert, AX.vert);
 
-    //   var XA = edgePair[AX],
-    //       XL = edgeNext[AX], LA = edgeNext[XL],
-    //       AR = edgeNext[XA], RX = edgeNext[AR],
-    //       XR = edgePair[RX], LX = edgePair[XL],
-    //       RR2 = edgeNext[XR], R2X = edgeNext[RR2],
-    //       XL2 = edgeNext[LX], L2L = edgeNext[XL2];
+      int A = XA.vert;
+      int R = XR.vert;
+      int L = XL.vert;
+      int L2 = XL2.vert;
+      int R2 = RR2.vert;
+      int X = AX.vert;
 
-    //   var A = edgeVert[XA],
-    //       R = edgeVert[XR],
-    //       L = edgeVert[XL],
-    //       L2 = edgeVert[XL2],
-    //       R2 = edgeVert[RR2],
-    //       X = edgeVert[AX];
+      // make sure vertices A, R and L don't end up without key edges
+      this.vertKeyEdges[A] = AR;
+      this.vertKeyEdges[L] = LA;
+      this.vertKeyEdges[R] = RR2;
 
-    //   if(XA === LA || AX === AR)
-    //       // return;
-    //       throw "ugh"; // shit
+      // replace faces that are about to be deleted
+      LA.face = LX.face;
+      AR.face = XR.face;
 
-    //   if(X === R || X === L)
-    //       // return;
-    //       throw "wat"; // shit
+      // loop through the "spokes" of vertex X
+      int n = 2;
+      HalfEdge edge = LX;
+      while(edge != RX) {
+        // replace vertex X with A in the face
+        for (int i = 0; i < 3; i++)
+          if (this.triangles[edge.face + i] == X)
+            this.triangles[edge.face + i] = A;
 
-    //   // make sure vertices A, R and L don't end up without key edges
-    //   keyEdge[A] = AR;
-    //   keyEdge[L] = LA;
-    //   keyEdge[R] = RR2;
+        // update the vertex of each inward edge
+        edge.vert = A;
+        edge = edge.next.pair;
 
-    //   // replace faces that are about to be deleted
-    //   edgeFace[LA] = edgeFace[LX];
-    //   edgeFace[AR] = edgeFace[XR];
+        if(n++ > 20)
+            throw new System.Exception("whoops, infinite loop on aisle 3!");
+      }
 
-    //   // loop through the "spokes" of vertex X
-    //   var n = 2, edge = LX;
-    //   while(edge !== RX) {
-    //       // replace vertex X with A in the face
-    //       face = faces[edgeFace[edge]];
+      // repair the next-edge relationships
 
-    //       if(face.a === X)
-    //           face.a = A;
-    //       else if(face.b === X)
-    //           face.b = A;
-    //       else if(face.c === X)
-    //           face.c = A;
-    //       else
-    //           throw 'uh-oh: '+face.a+', '+face.b+', '+face.c;
+      //  ---------------L--     degenerate case where X
+      //  \          _-'/|\      has only 3 neighbors
+      //   \      _-'  / | \
+      //    \  _-'    /  |
+      //  ---A-------X   |
+      //    / `-._    \  |
+      //   /      `-._ \ | /
+      //  /           `-\|/
+      //  ---------------R---
 
-    //       // update the vertex of each inward edge
-    //       edgeVert[edge] = A;
+      // if(R === L2) { // also R2 === L
+      if(RR2 == L2L) {
+        LA.next = AR;
+        L2L.next = LA;
+      } else {
+        LA.next = XL2;
+        R2X.next = AR;
+        L2L.next = LA;
+      }
+      AR.next = RR2;
 
-    //       edge = edgePair[edgeNext[edge]];
+      // delete stuff
+      this.RemoveFace(AX.face);
+      this.RemoveFace(XA.face);
 
-    //       if(n++ > 20)
-    //           throw 'whoops, infinite loop on aisle 3!';
-    //   }
-
-    //   // repair the next-edge relationships
-
-    //   //  ---------------L--     degenerate case where X
-    //   //  \          _-'/|\      has only 3 neighbors
-    //   //   \      _-'  / | \
-    //   //    \  _-'    /  |
-    //   //  ---A-------X   |
-    //   //    / `-._    \  |
-    //   //   /      `-._ \ | /
-    //   //  /           `-\|/
-    //   //  ---------------R---
-
-    //   // if(R === L2) { // also R2 === L
-    //   if(RR2 === L2L) {
-    //       edgeNext[LA] = AR;
-    //       edgeNext[L2L] = LA;
-
-    //   } else {
-    //       edgeNext[LA] = XL2;
-    //       edgeNext[R2X] = AR;
-    //       edgeNext[L2L] = LA;
-    //   }
-    //   edgeNext[AR] = RR2;
-
-    //   // delete stuff
-    //   this.removeFace(geometry, edgeFace[AX]);
-    //   this.removeFace(geometry, edgeFace[XA]);
-
-    //   this.removeEdge(geometry, AX);
-    //   this.removeEdge(geometry, XA);
-    //   this.removeEdge(geometry, LX);
-    //   this.removeEdge(geometry, XL);
-    //   this.removeEdge(geometry, RX);
-    //   this.removeEdge(geometry, XR);
+      this.RemoveEdge(AX);
+      this.RemoveEdge(XA);
+      this.RemoveEdge(LX);
+      this.RemoveEdge(XL);
+      this.RemoveEdge(RX);
+      this.RemoveEdge(XR);
 
 
-    //   this.removeVert(geometry, X);
+      this.RemoveVert(X);
 
 
-    //   // check if anything didn't get deleted good
-    //   var removedEdges = [AX, XA, LX, XL, RX, XR];
-    //   var deleted = geometry.edges.deleted;
+      // check if anything didn't get deleted good
+      // var removedEdges = [AX, XA, LX, XL, RX, XR];
+      // var deleted = geometry.edges.deleted;
 
 
-    //   return;
+      // return;
 
-    //   //diagnostics
-    //   HalfEdge.checkEdgePairs(geometry);
+      // //diagnostics
+      // HalfEdge.checkEdgePairs(geometry);
 
-    //   for(i=0, count=keyEdge.length; i<count; i++) {
-    //       if(i === X || keyEdge[i] === null)
-    //           continue;
-    //       if(edgeVert[edgePair[keyEdge[i]]] !== i)
-    //           throw("uh-oh");
-    //   }
-
-
-    //   for(i=0, count=edgeVert.length; i<count; i++) {
-    //       if(deleted[i])
-    //           continue;
-
-    //       if(deleted[edgeNext[i]])
-    //           throw("UGHHHH");
-    //       if(deleted[edgePair[i]])
-    //           throw("UGHHHH");
-    //       if(edgeVert[i] == X)
-    //           throw("UGHHHH");
-    //   }
-
-    //   for(i=0, count=keyEdge.length; i<count; i++) {
-    //       if(geometry.freeVerts.indexOf(i) > -1)
-    //           continue;
-    //       if(deleted[keyEdge[i]])
-    //           throw("UGHHHH");
-    //   }
+      // for(i=0, count=keyEdge.length; i<count; i++) {
+      //     if(i === X || keyEdge[i] === null)
+      //         continue;
+      //     if(edgeVert[edgePair[keyEdge[i]]] !== i)
+      //         throw("uh-oh");
+      // }
 
 
-    //   for(i=0, count=edgeVert.length; i<count; i++) {
-    //       if(deleted[i])
-    //           continue;
-    //       if(edgeVert[i] == X)
-    //           throw("UGHHHH");
-    //   }
-    // }
+      // for(i=0, count=edgeVert.length; i<count; i++) {
+      //     if(deleted[i])
+      //         continue;
+
+      //     if(deleted[edgeNext[i]])
+      //         throw("UGHHHH");
+      //     if(deleted[edgePair[i]])
+      //         throw("UGHHHH");
+      //     if(edgeVert[i] == X)
+      //         throw("UGHHHH");
+      // }
+
+      // for(i=0, count=keyEdge.length; i<count; i++) {
+      //     if(geometry.freeVerts.indexOf(i) > -1)
+      //         continue;
+      //     if(deleted[keyEdge[i]])
+      //         throw("UGHHHH");
+      // }
+
+
+      // for(i=0, count=edgeVert.length; i<count; i++) {
+      //     if(deleted[i])
+      //         continue;
+      //     if(edgeVert[i] == X)
+      //         throw("UGHHHH");
+      // }
+    }
 
     public int SplitEdge(HalfEdge AB) {
       if(this.freeFaces.Count < 2 || this.freeVerts.Count == 0 || this.freeEdges.Count < 6)

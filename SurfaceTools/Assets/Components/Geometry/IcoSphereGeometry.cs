@@ -84,5 +84,70 @@ namespace Doublemice.Geometry.Primitives {
         this.vertices[i] = this.normals[i] * radius;
       }
     }
+
+
+    // def subdivide(self):
+    //     # allocate memory for new vertices
+    //     old_vert_count = self.vertices.shape[0]
+    //     new_vert_count = (old_vert_count * 4) - 6
+    //     new_vertices = np.empty((new_vert_count, 3), dtype=np.float32)
+    //     new_vertices[:old_vert_count] = self.vertices
+    //     next_vert_index = old_vert_count
+
+    //     # allocate memory for new faces
+    //     old_face_count = self.faces.shape[0]
+    //     new_face_count = old_face_count * 4
+    //     new_faces = np.empty((new_face_count, 3), dtype=np.intp)
+    //     next_face_index = 0
+
+    //     edge_dict = {}
+
+    //     for i in range(old_face_count):
+    //         #         B
+    //         #         *
+    //         #        / \
+    //         #       /   \
+    //         #   AB *-----* BC
+    //         #     / \   / \
+    //         #    /   \ /   \
+    //         #   *-----*-----*
+    //         #  A     CA      C
+
+    //             A, B, C = self.faces[i]
+
+    //             AB, next_vert_index = self._add_midpoint_vertex(A, B, new_vertices, edge_dict, next_vert_index);
+    //             BC, next_vert_index = self._add_midpoint_vertex(B, C, new_vertices, edge_dict, next_vert_index);
+    //             CA, next_vert_index = self._add_midpoint_vertex(C, A, new_vertices, edge_dict, next_vert_index);
+
+    //             new_faces[next_face_index:next_face_index + 4] = (
+    //                 (A,  AB, CA),
+    //                 (B,  BC, AB),
+    //                 (C,  CA, BC),
+    //                 (AB, BC, CA),
+    //             )
+    //             next_face_index += 4
+
+    //     self.vertices = new_vertices
+    //     self.faces = new_faces
+
+    // @staticmethod
+    // def _add_midpoint_vertex(A, B, new_vertices, edge_dict, next_vert_index):
+    //     edge_key = (A, B) if A <= B else (B, A)
+    //     midpoint_index = edge_dict.get(edge_key, None)
+    //     if midpoint_index is None:
+    //         midpoint_index = next_vert_index
+    //         edge_dict[edge_key] = midpoint_index
+    //         # add new vertex
+    //         new_vertices[midpoint_index] = (new_vertices[A] + new_vertices[B]) * 0.5
+    //         next_vert_index += 1
+
+    //     return midpoint_index, next_vert_index
+
+
+    // def normalize_vert_radii(self):
+    //     self.normals = self.vertices / np.linalg.norm(self.vertices, axis=1, keepdims=True)
+    //     self.vertices = self.normals * self.radius
+
+
   }
 }
