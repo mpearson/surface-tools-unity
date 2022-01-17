@@ -111,7 +111,7 @@ namespace Doublemice.UI
                 UpdatePositionTarget();
             }
             UpdateZoomTarget();
-            // UpdateRotationTarget();
+            UpdateRotationTarget();
             if (LookTowardsObject)
             {
                 LookTowardsTarget();
@@ -296,7 +296,7 @@ namespace Doublemice.UI
                 }
             }
         }
-
+/*
         public void OnMouseDown(InputAction.CallbackContext context) {
             // Debug.LogFormat("onmousedown: {0}", context.control.IsPressed());
             // Debug.LogFormat("onmousedown: {0}", context.action..IsPressed());
@@ -345,7 +345,7 @@ namespace Doublemice.UI
             // {
             //     _orbitStarted = false;
             // }
-        }
+        } */
 
         private void UpdateRotationTarget() {
             #if ENABLE_INPUT_SYSTEM
